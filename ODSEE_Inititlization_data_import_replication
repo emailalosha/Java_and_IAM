@@ -1,0 +1,91 @@
+Make sure hostname set (as a root user)
+--------------------------------
+vi /etc/hosts
+192.168.1.72 ds.sms.com
+
+If you want to connect to another host using DNS name like in my case then add that mapping also into /etc/hosts file
+Like in my case on ds.sms.com in /etc/hosts you will find below as well 
+192.168.1.72 iam.sms.com
+
+Now to set hostname (as a root user)
+----------------
+hostname ds.sms.com
+
+To create new group and user and laater add that user into the group
+------------------------------------------------------
+groupadd domainusers
+useradd odsee
+usermod odsee -G domainusers
+passwd odsee
+
+Execute all above at once
+groupadd domainusers; useradd odsee; usermod odsee -G domainusers; passwd odsee
+
+1. Stop Network Manager (as root user)
+systemctl stop NetworkManager;systemctl disable NetworkManager
+
+2. stop firewall (as root user)
+systemctl stop firewalld; systemctl disable firewalld
+
+3. Install unzip command (as root user)
+yum install unzip -y
+ 
+4. Install pre-requisite libraries or packages (as root user)
+yum install ld-linux.so.2 -y
+yum install libstdc++ -y
+yum install libstdc++.so.6 -y
+
+Execute all above at once
+
+yum install ld-linux.so.2 -y; yum install libstdc++ -y ; yum install libstdc++.so.6 -y
+
+5. Create instance and suffix
+
+a. Create instance
+dsadm create -p 1389 -P 1636 /apps/instance/test1
+b. start instance
+dsadm start /apps/instance/test1
+c. create root DN or suffix of instance
+
+create a file pwd.txt and put directory manager password in it
+
+dsconf create-suffix -i -h `hostname` -p 1389 -D cn="Directory Manager" -w `pwd`/pwd.txt dc=example,dc=com
+
+d. stop instance
+dsadm stop /apps/instance/test1
+
+e. import default example data (If need to have replication then execute step 6 first)
+dsadm import -i /apps/instance/test1 /apps/oracle/dsee7/resources/ldif/Example.ldif dc=example,dc=com
+f. start the instance
+dsadm start /apps/instance/test1
+g. Take export of data (only if you are going to setup replication)
+dsconf export -i -h `hostname` -p 1389 -D cn="Directory Manager" -w `pwd`/pwd.txt 'dc=example,dc=com' `pwd`/export.ldif
+
+6. Enable replication (once complete this step go to step 5 - e and import data on one node 
+in my case iam.sms.com)
+
+From both the machine execute below enable-repl first
+
+dsconf enable-repl -i -h `hostname` -p 1389 -D cn="Directory Manager" -w `pwd`/pwd.txt -d 1 master dc=example,dc=com
+dsconf enable-repl -i -h `hostname` -p 1389 -D cn="Directory Manager" -w `pwd`/pwd.txt -d 2 master dc=example,dc=com
+
+Now from both the machine execute below create-repl-agmt
+
+dsconf create-repl-agmt -i -h `hostname` -p 1389 -D cn="Directory Manager" -w `pwd`/pwd.txt dc=example,dc=com iam.sms.com:1389
+dsconf create-repl-agmt -i -h `hostname` -p 1389 -D cn="Directory Manager" -w `pwd`/pwd.txt dc=example,dc=com ds.sms.com:1389
+
+And finally from both the machine execute below accord-repl-agmt
+dsconf accord-repl-agmt -i -h `hostname` -p 1389 -D cn="Directory Manager" -w `pwd`/pwd.txt  dc=example,dc=com iam.sms.com:1389
+dsconf accord-repl-agmt -i -h `hostname` -p 1389 -D cn="Directory Manager" -w `pwd`/pwd.txt  dc=example,dc=com ds.sms.com:1389
+
+7. This is network time setup, google to understand more about it
+yum install ntp -y
+systemctl enable ntpd
+systemctl start htpd
+systemctl status ntpd
+
+Below command will enable suffix for update. 
+dsconf set-suffix-prop -i -h `hostname` -p 1389 -D cn="Directory Manager" -w `pwd`/pwd.txt dc=example,dc=com repl-accept-client-update-enabled:on
+
+
+
