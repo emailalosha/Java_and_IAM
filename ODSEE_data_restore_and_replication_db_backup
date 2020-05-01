@@ -1,0 +1,34 @@
+
+
+dsconf enable-repl -i -h `hostname` -p 1389 -D cn="Directory Manager" -w `pwd`/pwd.txt -d 1 master dc=example,dc=com
+dsconf create-repl-agmt -i -h `hostname` -p 1389 -D cn="Directory Manager" -w `pwd`/pwd.txt dc=example,dc=com iam.sms.com:1389
+
+dsconf enable-repl -i -h `hostname` -p 1389 -D cn="Directory Manager" -w `pwd`/pwd.txt -d 2 master dc=example,dc=com
+dsconf create-repl-agmt -i -h `hostname` -p 1389 -D cn="Directory Manager" -w `pwd`/pwd.txt dc=example,dc=com ds.sms.com:1389
+
+
+dsconf accord-repl-agmt -i -h `hostname` -p 1389 -D cn="Directory Manager" -w `pwd`/pwd.txt dc=example,dc=com iam.sms.com:1389
+dsconf accord-repl-agmt -i -h `hostname` -p 1389 -D cn="Directory Manager" -w `pwd`/pwd.txt dc=example,dc=com ds.sms.com:1389
+
+
+dsadm stop /apps/instance/test1
+dsadm import -i /apps/instance/test1 /apps/oracle/dsee7/resources/ldif/Example.ldif dc=example,dc=com
+dsadm start /apps/instance/test1
+dsadm stop /apps/instance/test1
+dsadm backup /apps/instance/test1 `pwd`/backup
+dsadm start /apps/instance/test1
+tar -zcvf backup.tar.gz backup/
+scp backup.tar.gz odsee@192.168.1.72:/tmp
+
+
+dsadm stop /apps/instance/test1
+cp /tmp/backup.tar.gz .
+tar -zxvf backup.tar.gz
+dsadm restore -i /apps/instance/test1 `pwd`/backup
+dsadm start /apps/instance/test1
+dsconf set-suffix-prop -i -h `hostname` -p 1389 -D cn="Directory Manager" -w `pwd`/pwd.txt dc=example,dc=com repl-accept-client-update-enabled:on
+
+
+
+
+
