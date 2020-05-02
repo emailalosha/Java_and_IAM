@@ -1,0 +1,26 @@
+SSH X11 allow you to open UP GUI from linux / unix system 
+
+Requirement 
+--------------
+1. Download xming software and install it (on windows)
+2. Install below packages on linux 
+yum install xauth -y
+3. Make sure X11 forwarding is yes on linux 
+vi /etc/ssh/sshd_config
+4. make changes on putty and connect 
+
+
+
+In case above not works and you need to switch to another user to use X11 (go for below steps, explained in video how to use it)
+----------------------------
+a)
+yum install xhost -y
+xhost +
+==============
+
+In worst case if nothing works out install these packages as well. 
+b)
+yum install libXtst.so.6 -y
+yum install libXtst -y
+
+
