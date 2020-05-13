@@ -1,0 +1,48 @@
+Install Apache HTTP with APR and standalone SSL engine
+
+useradd http;groupadd apache;usermod -G apache http;passwd http
+
+Apache HTTP server can be downloaded from here...
+https://httpd.apache.org/download.cgi
+
+Apache portable Runtime...
+http://apr.apache.org/
+
+if any feature not provided by OS platform, apache provides their own API (s) or library in the form of 
+APR and APR-util where developer can make use of this platform independent functionality and overcome 
+deficiency. 
+
+OpenSSL package can be found here..
+https://www.openssl.org/source/
+
+http://httpd.apache.org/docs/2.4/programs/configure.html
+
+Pre-requisite package needed on linux
+
+Perl Compatible Regular Expression (used by many open source project)
+yum install pcre-devel -y
+
+GCC - GNU Compiler Collections (used for compile C and C++ languages)
+yum install gcc -y
+
+Perl is a programming language included in most of linux distribution (not included in mine)
+yum install perl -y
+
+The zlib-devel package contains the header files and libraries needed to develop programs that use 
+the zlib compression and decompression library
+yum install zlib-devel -y
+
+XML parser library written in C.
+yum install expat-devel -y
+
+For exact steps watch the video...
+
+Compile and install SSL 
+./config --prefix=/apps/apache/ssl --openssldir=/apps/apache/ssl shared zlib
+make 
+make install
+
+Compile and install Apache HTTP
+./configure --prefix=/apps/apache/http --enable-ssl --with-ssl=/apps/apache/ssl --enable-mpms-shared=all
+make 
+make install
